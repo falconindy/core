@@ -3038,7 +3038,15 @@ async def test_migrate_of_incompatible_config_entry(
             {
                 "state_class": "measurement",
             },
-            (),
+            (
+                (
+                    {
+                        "state_class": "measurement_angle",
+                        "unit_of_measurement": "deg",
+                    },
+                    {"unit_of_measurement": "invalid_uom_for_state_class"},
+                ),
+            ),
             {
                 "state_topic": "test-topic",
             },
@@ -3301,9 +3309,7 @@ async def test_subentry_reconfigure_remove_entity(
     subentry_id: str
     subentry: ConfigSubentry
     subentry_id, subentry = next(iter(config_entry.subentries.items()))
-    result = await config_entry.start_subentry_reconfigure_flow(
-        hass, "device", subentry_id
-    )
+    result = await config_entry.start_subentry_reconfigure_flow(hass, subentry_id)
     assert result["type"] is FlowResultType.MENU
     assert result["step_id"] == "summary_menu"
 
@@ -3426,9 +3432,7 @@ async def test_subentry_reconfigure_edit_entity_multi_entitites(
     subentry_id: str
     subentry: ConfigSubentry
     subentry_id, subentry = next(iter(config_entry.subentries.items()))
-    result = await config_entry.start_subentry_reconfigure_flow(
-        hass, "device", subentry_id
-    )
+    result = await config_entry.start_subentry_reconfigure_flow(hass, subentry_id)
 
     assert result["type"] is FlowResultType.MENU
     assert result["step_id"] == "summary_menu"
@@ -3645,9 +3649,7 @@ async def test_subentry_reconfigure_edit_entity_single_entity(
     subentry_id: str
     subentry: ConfigSubentry
     subentry_id, subentry = next(iter(config_entry.subentries.items()))
-    result = await config_entry.start_subentry_reconfigure_flow(
-        hass, "device", subentry_id
-    )
+    result = await config_entry.start_subentry_reconfigure_flow(hass, subentry_id)
     assert result["type"] is FlowResultType.MENU
     assert result["step_id"] == "summary_menu"
 
@@ -3790,9 +3792,7 @@ async def test_subentry_reconfigure_edit_entity_reset_fields(
     subentry_id: str
     subentry: ConfigSubentry
     subentry_id, subentry = next(iter(config_entry.subentries.items()))
-    result = await config_entry.start_subentry_reconfigure_flow(
-        hass, "device", subentry_id
-    )
+    result = await config_entry.start_subentry_reconfigure_flow(hass, subentry_id)
     assert result["type"] is FlowResultType.MENU
     assert result["step_id"] == "summary_menu"
 
@@ -3920,9 +3920,7 @@ async def test_subentry_reconfigure_add_entity(
     subentry_id: str
     subentry: ConfigSubentry
     subentry_id, subentry = next(iter(config_entry.subentries.items()))
-    result = await config_entry.start_subentry_reconfigure_flow(
-        hass, "device", subentry_id
-    )
+    result = await config_entry.start_subentry_reconfigure_flow(hass, subentry_id)
     assert result["type"] is FlowResultType.MENU
     assert result["step_id"] == "summary_menu"
 
@@ -4020,9 +4018,7 @@ async def test_subentry_reconfigure_update_device_properties(
     subentry_id: str
     subentry: ConfigSubentry
     subentry_id, subentry = next(iter(config_entry.subentries.items()))
-    result = await config_entry.start_subentry_reconfigure_flow(
-        hass, "device", subentry_id
-    )
+    result = await config_entry.start_subentry_reconfigure_flow(hass, subentry_id)
     assert result["type"] is FlowResultType.MENU
     assert result["step_id"] == "summary_menu"
 
@@ -4122,9 +4118,7 @@ async def test_subentry_reconfigure_availablity(
     }
     assert subentry.data.get("availability") == expected_availability
 
-    result = await config_entry.start_subentry_reconfigure_flow(
-        hass, "device", subentry_id
-    )
+    result = await config_entry.start_subentry_reconfigure_flow(hass, subentry_id)
     assert result["type"] is FlowResultType.MENU
     assert result["step_id"] == "summary_menu"
 
@@ -4172,9 +4166,7 @@ async def test_subentry_reconfigure_availablity(
     assert subentry.data.get("availability") == expected_availability
 
     # Assert we can reset the availability config
-    result = await config_entry.start_subentry_reconfigure_flow(
-        hass, "device", subentry_id
-    )
+    result = await config_entry.start_subentry_reconfigure_flow(hass, subentry_id)
     assert result["type"] is FlowResultType.MENU
     assert result["step_id"] == "summary_menu"
     result = await hass.config_entries.subentries.async_configure(

@@ -41,6 +41,7 @@ from homeassistant.components.light import (
 from homeassistant.components.sensor import (
     CONF_STATE_CLASS,
     DEVICE_CLASS_UNITS,
+    STATE_CLASS_UNITS,
     SensorDeviceClass,
     SensorStateClass,
 )
@@ -224,6 +225,8 @@ from .const import (
     CONF_SPEED_RANGE_MIN,
     CONF_STATE_CLOSED,
     CONF_STATE_CLOSING,
+    CONF_STATE_OFF,
+    CONF_STATE_ON,
     CONF_STATE_OPEN,
     CONF_STATE_OPENING,
     CONF_STATE_STOPPED,
@@ -646,6 +649,13 @@ def validate_sensor_platform_config(
     ):
         errors[CONF_UNIT_OF_MEASUREMENT] = "invalid_uom"
 
+    if (
+        (state_class := config.get(CONF_STATE_CLASS)) is not None
+        and state_class in STATE_CLASS_UNITS
+        and config.get(CONF_UNIT_OF_MEASUREMENT) not in STATE_CLASS_UNITS[state_class]
+    ):
+        errors[CONF_UNIT_OF_MEASUREMENT] = "invalid_uom_for_state_class"
+
     return errors
 
 
@@ -682,11 +692,19 @@ class PlatformField:
 @callback
 def unit_of_measurement_selector(user_data: dict[str, Any | None]) -> Selector:
     """Return a context based unit of measurement selector."""
+
+    if (state_class := user_data.get(CONF_STATE_CLASS)) in STATE_CLASS_UNITS:
+        return SelectSelector(
+            SelectSelectorConfig(
+                options=[str(uom) for uom in STATE_CLASS_UNITS[state_class]],
+                sort=True,
+                custom_value=True,
+            )
+        )
+
     if (
-        user_data is None
-        or (device_class := user_data.get(CONF_DEVICE_CLASS)) is None
-        or device_class not in DEVICE_CLASS_UNITS
-    ):
+        device_class := user_data.get(CONF_DEVICE_CLASS)
+    ) is None or device_class not in DEVICE_CLASS_UNITS:
         return TEXT_SELECTOR
     return SelectSelector(
         SelectSelectorConfig(
@@ -1337,6 +1355,24 @@ PLATFORM_MQTT_FIELDS: dict[str, dict[str, PlatformField]] = {
             required=False,
             validator=validate(cv.template),
             error="invalid_template",
+        ),
+        CONF_PAYLOAD_OFF: PlatformField(
+            selector=TEXT_SELECTOR,
+            required=False,
+            default=DEFAULT_PAYLOAD_OFF,
+        ),
+        CONF_PAYLOAD_ON: PlatformField(
+            selector=TEXT_SELECTOR,
+            required=False,
+            default=DEFAULT_PAYLOAD_ON,
+        ),
+        CONF_STATE_OFF: PlatformField(
+            selector=TEXT_SELECTOR,
+            required=False,
+        ),
+        CONF_STATE_ON: PlatformField(
+            selector=TEXT_SELECTOR,
+            required=False,
         ),
         CONF_RETAIN: PlatformField(selector=BOOLEAN_SELECTOR, required=False),
         CONF_OPTIMISTIC: PlatformField(selector=BOOLEAN_SELECTOR, required=False),
@@ -3573,7 +3609,7 @@ def try_connection(
     """Test if we can connect to an MQTT broker."""
     # We don't import on the top because some integrations
     # should be able to optionally rely on MQTT.
-    import paho.mqtt.client as mqtt  # pylint: disable=import-outside-toplevel
+    import paho.mqtt.client as mqtt  # noqa: PLC0415
 
     mqtt_client_setup = MqttClientSetup(user_input)
     mqtt_client_setup.setup()
