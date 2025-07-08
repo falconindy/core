@@ -20,6 +20,12 @@ DEVICE_MOCKS = {
         Platform.SENSOR,
         Platform.SWITCH,
     ],
+    "cwjwq_smart_odor_eliminator": [
+        # https://github.com/orgs/home-assistant/discussions/79
+        Platform.SELECT,
+        Platform.SENSOR,
+        Platform.SWITCH,
+    ],
     "cwwsq_cleverio_pf100": [
         # https://github.com/home-assistant/core/issues/144745
         Platform.NUMBER,
