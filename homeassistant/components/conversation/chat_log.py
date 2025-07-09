@@ -180,6 +180,7 @@ class ChatLog:
     extra_system_prompt: str | None = None
     llm_api: llm.APIInstance | None = None
     delta_listener: Callable[[ChatLog, dict], None] | None = None
+    llm_input_provided_index = 0
 
     @property
     def continue_conversation(self) -> bool:
@@ -410,6 +411,7 @@ class ChatLog:
         user_extra_system_prompt: str | None = None,
     ) -> None:
         """Set the LLM system prompt."""
+        self.llm_input_provided_index = len(self.content)
         llm_api: llm.APIInstance | None = None
 
         if user_llm_hass_api:
